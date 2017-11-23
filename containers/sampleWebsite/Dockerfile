@@ -10,6 +10,7 @@ RUN ls /var/www/web
 RUN  dotnet restore
 RUN dotnet publish -c Release -o out
 
-EXPOSE 6000
+EXPOSE 5000
 
-CMD ["dotnet","run"]
+#  --server.urls http://0.0.0.0:5000
+ENTRYPOINT ["dotnet","run","--server.urls","http://*:5000"]

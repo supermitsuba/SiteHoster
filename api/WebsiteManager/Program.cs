@@ -20,6 +20,7 @@ namespace WebsiteManager
 
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .UseKestrel()
                 .ConfigureAppConfiguration((context, config) =>{
                     var env = context.HostingEnvironment;
 
@@ -27,6 +28,7 @@ namespace WebsiteManager
                           .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional:true, reloadOnChange: true);
                     
                 })
+                .UseUrls("http://0.0.0.0:5000")
                 .UseStartup<Startup>()
                 .Build();
     }
