@@ -25,7 +25,7 @@
         private static void InitializeDirectory(string path)
         {
             // Probably should be replaced by singleton with a lock pattern
-            if (Directory.Exists(path))
+            if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
             }
