@@ -1,5 +1,6 @@
 namespace SiteHosterSite.Services.Commands
 {
+    using System.Threading.Tasks;
     using SiteHoster.Common.Models;
     
     public abstract class Command
@@ -10,6 +11,6 @@ namespace SiteHosterSite.Services.Commands
             this.receiver = receiver;
         }
 
-        public abstract void Execute();
+        public abstract Task Execute();
     }
 }

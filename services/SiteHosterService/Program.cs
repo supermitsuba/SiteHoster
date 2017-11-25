@@ -9,12 +9,12 @@ namespace SiteHosterSite
 {
     class Program
     {
+        static string httpUrl = "http://localhost:5000";
+        static string url = "amqp://guest:guest@192.168.10.115";
+        static string queueName = "sitehoster";
+
         static void Main(string[] args)
         {
-            // TODO: figure out this stuff.
-            var url = "amqp://guest:guest@192.168.10.115";
-            var queueName = "sitehoster";
-
             var messageReceiver = new RabbitMQReceiver(url, queueName);
             messageReceiver.Start( ProcessMessage );
 
@@ -30,10 +30,14 @@ namespace SiteHosterSite
             switch(message.RabbitMessageType)
             {
                 case MessageType.BuildDocker:
-                    command = new BuildDockerCommand(message, new Services.DockerService());
+                    command = new BuildDockerCommand(message, 
+                        new Services.DockerService(), 
+                        new DiscoveryServiceClient(httpUrl));
                     break;
                 case MessageType.BuildDotNet:
-                    command = new BuildDotNetCommand(message, new Services.DotNetService());
+                    command = new BuildDotNetCommand(message, 
+                        new Services.DotNetService(), 
+                        new DiscoveryServiceClient(httpUrl));
                     break;
                 default:
                     // unable to process message
@@ -43,7 +47,8 @@ namespace SiteHosterSite
 
             if(command != null)
             {
-                command.Execute();
+                var task = command.Execute();
+                task.Wait();
             }
         }
     }

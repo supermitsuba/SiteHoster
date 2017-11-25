@@ -2,18 +2,22 @@ namespace SiteHosterSite.Services.Commands
 {
     using System.Diagnostics;
     using System.Net.Http;
+    using System.Threading.Tasks;
     using Newtonsoft.Json;
     using SiteHoster.Common.Models;
+    using SiteHoster.Common.Services;
 
     public class BuildDotNetCommand : Command
     {
         private readonly DotNetService service;
+        private readonly DiscoveryServiceClient client;
 
-        public BuildDotNetCommand(RabbitMessage receiver, DotNetService service) :
+        public BuildDotNetCommand(RabbitMessage receiver, DotNetService service, DiscoveryServiceClient client) :
             base(receiver)
         {
             this.receiver = receiver;
             this.service = service;
+            this.client = client;
         }
 
         /*
@@ -23,26 +27,12 @@ namespace SiteHosterSite.Services.Commands
         "message":"{ \"WebsiteName\": \"discovery-service\"}"
         }
         */
-        public override async void Execute()
+        public override async Task Execute()
         {
             // Get the website that needs to be built
             // TODO: call discovery service for that.
             var dotnetMessage = JsonConvert.DeserializeObject<DotNetMessage>(receiver.Message);
-            Website site = null;
-            using(var client = new HttpClient())
-            {
-                var httpResult = await client.GetAsync($"http://localhost:5000/api/websites/{dotnetMessage.WebsiteName}");
-                if(httpResult.IsSuccessStatusCode)
-                {
-                    var contentResult = await httpResult.Content.ReadAsStringAsync();
-                    site = JsonConvert.DeserializeObject<Website>(contentResult);
-                }
-                else
-                {
-                    System.Console.WriteLine("[WARN] - Could not retrieve service from discovery service.");
-                    return;
-                }
-            }
+            Website site = await client.GetWebsite(dotnetMessage.WebsiteName);
 
             if(site != null)
             {
