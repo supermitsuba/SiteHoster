@@ -7,9 +7,10 @@
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Options;
-    using WebsiteManager.Models;
     using Newtonsoft.Json;
     using System.Net;
+    using SiteHoster.Common.Models;
+    using WebsiteManager.Models;
 
     [Route("api/[controller]")]
     public class WebsitesController : Controller
@@ -47,7 +48,7 @@
             foreach(var jsonFile in Directory.EnumerateFiles(path, "*.json", SearchOption.TopDirectoryOnly))
             {
                 var text = System.IO.File.ReadAllText(jsonFile);
-                results.Add(JsonConvert.DeserializeObject<Website>(path));
+                results.Add(JsonConvert.DeserializeObject<Website>(text));
             }
 
             return results;
@@ -80,7 +81,7 @@
 
         private static void SaveWebsite(string path, Website value)
         {
-            var fullPath = System.IO.Path.Combine(path, value.Name);
+            var fullPath = System.IO.Path.Combine(path, value.Name+".json");
             System.IO.File.WriteAllText(fullPath, JsonConvert.SerializeObject(value));
         }
 
@@ -117,22 +118,8 @@
 
         private void DeleteWebsite(string saveLocation, string name)
         {
-            var fullPath = System.IO.Path.Combine(saveLocation, name);
+            var fullPath = System.IO.Path.Combine(saveLocation, name+".json");
             System.IO.File.Delete(fullPath);
-        }
-
-
-        // DELETE api/values/5
-        [HttpPost("{name}/build")]
-        public void Build(string name)
-        {
-        }
-
-        
-        // DELETE api/values/5
-        [HttpPost("{name}/start")]
-        public void Start(string name)
-        {
         }
     }
 }

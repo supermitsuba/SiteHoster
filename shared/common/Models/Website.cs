@@ -1,4 +1,4 @@
-namespace WebsiteManager.Models
+namespace SiteHoster.Common.Models
 {
     using System;
 

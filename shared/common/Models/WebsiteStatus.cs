@@ -1,4 +1,4 @@
-namespace WebsiteManager.Models
+namespace SiteHoster.Common.Models
 {
     public enum WebsiteStatus 
     {

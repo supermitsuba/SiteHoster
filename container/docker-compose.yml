@@ -1,0 +1,22 @@
+version: '2'
+services:
+  rabbit_mq: # TODO: this needs to be an x86 version of rabbit mq
+    image: supermitsuba/rpi-rabbitmq:1 #for raspberry pi
+    ports:
+    - "8080:8080"
+    - "4369:4369"
+    - "5671:5671"
+    - "5672:5672"
+    - "25672:25672"
+    - "15672:15672"
+    container_name: rabbit_mq
+  api_discovery:
+    # build: ../api/WebsiteManager/Dockerfile
+    image: supermitsuba/discovery-service:1
+    ports: 
+    - "8000:5000"
+    # need to test this so files persist.
+    # volumes:
+    # - ./WebsiteJson:/var/www/web/savedFolder
+    links:
+    - rabbit_mq
