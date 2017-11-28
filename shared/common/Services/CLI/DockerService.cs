@@ -3,6 +3,7 @@ namespace SiteHosterSite.Services
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Linq;
     using System.Threading.Tasks;
     using SiteHoster.Common.Models;
     using SiteHoster.Common.Services;
@@ -26,7 +27,16 @@ namespace SiteHosterSite.Services
         {
             var process = new ProcessExecutor();
             var command = "docker";
-            var args = $"run --name {nameOfApplication} -d -p {port} supermitsuba/{nameOfApplication}:1";
+            var args = "";
+            if(string.IsNullOrEmpty(port))
+            {
+                args = $"run --name {nameOfApplication} -d -P supermitsuba/{nameOfApplication}:1";
+            }
+            else 
+            {
+                args = $"run --name {nameOfApplication} -d -p {port} supermitsuba/{nameOfApplication}:1";
+            }
+
             return Task<List<ConsoleMessage>>.Run(() =>
             {
                 var t = new TaskCompletionSource<List<ConsoleMessage>>();
@@ -57,6 +67,66 @@ namespace SiteHosterSite.Services
             {
                 var t = new TaskCompletionSource<List<ConsoleMessage>>();
                 process.ExecuteCLIWithResult(command, args, "./", message => t.TrySetResult(message));
+                return t.Task;
+            });
+        }
+
+        public static Task<List<ConsoleMessage>> RemoveDockerContainer(string nameOfApplication)
+        {
+            var command = "docker";
+            var args = $"rm {nameOfApplication}";
+            var process = new ProcessExecutor();
+            return Task<List<ConsoleMessage>>.Run(() =>
+            {
+                var t = new TaskCompletionSource<List<ConsoleMessage>>();
+                process.ExecuteCLIWithResult(command, args, "./", message => t.TrySetResult(message));
+                return t.Task;
+            });
+        }
+
+        public static Task<List<ConsoleMessage>> InspectDockerContainer(string containerId, string format)
+        {
+            var command = "docker";
+            var args = "inspect " + format +" "+ containerId;
+            var process = new ProcessExecutor();
+            return Task<List<ConsoleMessage>>.Run(() =>
+            {
+                var t = new TaskCompletionSource<List<ConsoleMessage>>();
+                process.ExecuteCLIWithResult(command, args, "./", message => t.TrySetResult(message));
+                return t.Task;
+            });
+        }
+
+        public async static Task<IEnumerable<string>> GetContainerPortsExposed(string containerId)
+        {
+            var format = "--format=\"{{range $p, $conf := .NetworkSettings.Ports}} {{$p}} -> {{(index $conf 0).HostPort}} {{end}}\"";
+            var result2 = await DockerService.InspectDockerContainer(containerId, format);
+            var portMapping = result2.Where(p => !p.IsError)
+                                     .Select(p => p.Message.Replace("[DEBUG]:", "").Trim())
+                                     .Where(p => !string.IsNullOrEmpty(p));
+            return portMapping;
+        }
+
+        public async static Task<string> GetContainerId(string name)
+        {
+            var format = "--format=\"{{.Id}}\"";
+            var result2 = await DockerService.InspectDockerContainer(name, format);
+            var id = result2.Where(p => !p.IsError)
+                            .Select(p => p.Message.Replace("[DEBUG]:", "").Trim())
+                            .Where(p => !string.IsNullOrEmpty(p))
+                            .FirstOrDefault();
+
+            return id;
+        }
+
+        public static Task<List<ConsoleMessage>> ExecuteScript(string pathToScript)
+        {
+            var command = $"{pathToScript}";
+            var process = new ProcessExecutor();
+            return Task<List<ConsoleMessage>>.Run(() =>
+            {
+                var t = new TaskCompletionSource<List<ConsoleMessage>>();
+                process.ExecuteCLIWithResult(command, "", "./", message => t.TrySetResult(message));
                 return t.Task;
             });
         }

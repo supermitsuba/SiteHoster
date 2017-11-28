@@ -9,7 +9,6 @@
     using SiteHoster.Common.Services;
     using SiteHosterSite.Services;
 
-    [Route("api/[controller]")]
     public class NginxController : Controller
     {
         public const string conatinerNameOfNginx = "nginx";
@@ -24,7 +23,7 @@
 
         // TODO: change the CLI calls to not be so suspectable to injection attacks
         [HttpPost()]
-        [Route("/container/create")]
+        [Route("api/nginx/container/create")]
         public async Task<IActionResult> Create()
         {
             var result = await DockerService.RunDockerImage(conatinerNameOfNginx, portExposed, "./");
@@ -33,7 +32,7 @@
         }
 
         [HttpPost()]
-        [Route("/Start")]
+        [Route("api/nginx/start")]
         public async Task<IActionResult> Start()
         {
             var result = await DockerService.StartDockerImage(conatinerNameOfNginx, portExposed, "./");
@@ -42,7 +41,7 @@
         }
         
         [HttpPost()]
-        [Route("/Reload")]
+        [Route("api/nginx/reload")]
         public async Task<IActionResult> Reload()
         {
             var result = await NginxService.ReloadNginxService(conatinerNameOfNginx);
@@ -51,7 +50,7 @@
         }
         
         [HttpPost()]
-        [Route("/Stop")]
+        [Route("api/nginx/stop")]
         public async Task<IActionResult> Stop()
         {
             var result = await DockerService.StopDockerImage(conatinerNameOfNginx);
@@ -88,7 +87,7 @@
     5.  Is there a way to not restart nginx?  "service nginx reload"
      */
         [HttpPost()]
-        [Route("/Config/{serviceName}")]
+        [Route("api/nginx/config/{serviceName}")]
         public async Task<IActionResult> AddNewConfig(string serviceName)
         {
             var linesToWrite = new StringBuilder();

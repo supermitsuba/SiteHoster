@@ -1,0 +1,1 @@
+docker inspect --format='{{range $p, $conf := .NetworkSettings.Ports}} {{$p}} -> {{(index $conf 0).HostPort}} {{end}}' b463cb699878d18a03c1afb9e8f3ae7d7a13ae8041a837ddc019996f9e097ece

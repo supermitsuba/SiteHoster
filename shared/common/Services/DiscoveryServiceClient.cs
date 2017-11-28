@@ -24,5 +24,15 @@ namespace SiteHoster.Common.Services
 
             return site;
         }
+
+        public async Task<Website> UpdateWebsite(string name, Website site)
+        {
+            using(var client = new HttpClient())
+            {
+                site = await client.PutAsync<Website>($"{baseAddress}/api/websites/{name}", site);
+            }
+
+            return site;
+        }
     }
 }
