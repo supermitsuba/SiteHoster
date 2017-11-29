@@ -10,11 +10,13 @@ namespace SiteHosterSite.Services
 
     public class DockerService 
     {
+        public static string Host {get;set;}
+
         public static Task<List<ConsoleMessage>> BuildDockerImage(string nameOfApplication, string directoryOfDockerfile)
         {
             var process = new ProcessExecutor();
             var command = "docker";
-            var args = $"build -t supermitsuba/{nameOfApplication}:1 . --no-cache";
+            var args = $"{Host} build -t supermitsuba/{nameOfApplication}:1 . --no-cache";
             return Task<List<ConsoleMessage>>.Run(() =>
             {
                 var t = new TaskCompletionSource<List<ConsoleMessage>>();
@@ -30,11 +32,11 @@ namespace SiteHosterSite.Services
             var args = "";
             if(string.IsNullOrEmpty(port))
             {
-                args = $"run --name {nameOfApplication} -d -P supermitsuba/{nameOfApplication}:1";
+                args = $"{Host} run --name {nameOfApplication} -d -P supermitsuba/{nameOfApplication}:1";
             }
             else 
             {
-                args = $"run --name {nameOfApplication} -d -p {port} supermitsuba/{nameOfApplication}:1";
+                args = $"{Host} run --name {nameOfApplication} -d -p {port} supermitsuba/{nameOfApplication}:1";
             }
 
             return Task<List<ConsoleMessage>>.Run(() =>
@@ -49,7 +51,7 @@ namespace SiteHosterSite.Services
         {
             var process = new ProcessExecutor();
             var command = "docker";
-            var args = $"start {nameOfApplication}";
+            var args = $"{Host} start {nameOfApplication}";
             return Task<List<ConsoleMessage>>.Run(() =>
             {
                 var t = new TaskCompletionSource<List<ConsoleMessage>>();
@@ -61,7 +63,7 @@ namespace SiteHosterSite.Services
         public static Task<List<ConsoleMessage>> StopDockerImage(string nameOfApplication)
         {
             var command = "docker";
-            var args = $"stop {nameOfApplication}";
+            var args = $"{Host} stop {nameOfApplication}";
             var process = new ProcessExecutor();
             return Task<List<ConsoleMessage>>.Run(() =>
             {
@@ -74,7 +76,7 @@ namespace SiteHosterSite.Services
         public static Task<List<ConsoleMessage>> RemoveDockerContainer(string nameOfApplication)
         {
             var command = "docker";
-            var args = $"rm {nameOfApplication}";
+            var args = $"{Host} rm {nameOfApplication}";
             var process = new ProcessExecutor();
             return Task<List<ConsoleMessage>>.Run(() =>
             {
@@ -87,7 +89,7 @@ namespace SiteHosterSite.Services
         public static Task<List<ConsoleMessage>> InspectDockerContainer(string containerId, string format)
         {
             var command = "docker";
-            var args = "inspect " + format +" "+ containerId;
+            var args = Host + " inspect " +  format +" "+ containerId;
             var process = new ProcessExecutor();
             return Task<List<ConsoleMessage>>.Run(() =>
             {

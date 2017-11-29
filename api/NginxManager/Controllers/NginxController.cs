@@ -18,6 +18,8 @@
 
         public NginxController() // DiscoveryServiceClient client)
         {
+            DockerService.Host = "-H unix:///var/run/docker.sock";
+            NginxService.Host = "-H unix:///var/run/docker.sock";
             this.discoveryService = new DiscoveryServiceClient("http://localhost:7000");
         }
 

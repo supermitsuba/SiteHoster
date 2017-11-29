@@ -8,10 +8,11 @@ namespace SiteHosterSite.Services
 
     public class NginxService
     {
+        public static string Host {get;set;}
         public static Task<List<ConsoleMessage>> ReloadNginxService(string nameOfNginxService)
         {
             var command = "docker";
-            var args = $"exec -d {nameOfNginxService} /usr/sbin/nginx -s reload";
+            var args = $"{Host} exec -d {nameOfNginxService} /usr/sbin/nginx -s reload";
             var process = new ProcessExecutor();
             return Task<List<ConsoleMessage>>.Run(() =>
             {
@@ -24,7 +25,7 @@ namespace SiteHosterSite.Services
         public static Task<List<ConsoleMessage>> WriteConfig(string nginxName, string configPath)
         {
             var command = "docker";
-            var args = $"cp {System.IO.Path.GetFullPath(configPath)} {nginxName}:/etc/nginx/nginx.conf";
+            var args = $"{Host} cp {System.IO.Path.GetFullPath(configPath)} {nginxName}:/etc/nginx/nginx.conf";
             var process = new ProcessExecutor();
             return Task<List<ConsoleMessage>>.Run(() =>
             {
