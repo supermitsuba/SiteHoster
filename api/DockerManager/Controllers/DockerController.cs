@@ -47,7 +47,7 @@ namespace DockerManager.Controllers
 
             if(website.DockerUrl != null)
             {
-                return this.BadRequest("This website is already a container.  Do a start instead.");
+                return this.BadRequest("This website is already a container.  Do a start instead.  Url: " +website.DockerUrl);
             }
 
             var result = await DockerService.RunDockerImage(website.Name, null, "./");
