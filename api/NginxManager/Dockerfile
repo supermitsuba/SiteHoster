@@ -6,6 +6,7 @@ RUN curl -sSL https://get.docker.com | sh
 #RUN git clone https://github.com/supermitsuba/SiteHoster.git /var/www/web
 #   VOLUME [ "/Users/supermitsuba/git/SiteHoster/api/WebsiteManager/" ]
 COPY ./out /var/www/web
+COPY ./nginx.conf /var/www/web/nginx.conf
 
 WORKDIR /var/www/web
 RUN ls /var/www/web
