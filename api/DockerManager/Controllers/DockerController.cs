@@ -14,15 +14,26 @@ namespace DockerManager.Controllers
 
         public DockerController()
         {
-            DockerService.Host = "-H unix:///var/run/docker.sock";
-            client = new DiscoveryServiceClient("http://192.168.10.125:32809");
+            var dockerHost = Environment.GetEnvironmentVariable("DOCKER_URL");
+            var discoveryServiceUrl = Environment.GetEnvironmentVariable("DISCOVERY_URL");
+
+            if(string.IsNullOrEmpty(dockerHost))
+            {
+                DockerService.Host = "";
+            }
+            else
+            {
+                DockerService.Host = "-H " + dockerHost; // "-H unix:///var/run/docker.sock";
+            }
+
+            client = new DiscoveryServiceClient(discoveryServiceUrl);
         }
 
         [HttpGet]
         [Route("api/docker/ping")]
         public IActionResult Ping()
         {
-            return this.Ok("Pong");
+            return this.Ok("Pong ");
         }
 
 

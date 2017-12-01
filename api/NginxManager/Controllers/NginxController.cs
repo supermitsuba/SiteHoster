@@ -12,15 +12,37 @@
     public class NginxController : Controller
     {
         public const string conatinerNameOfNginx = "nginx";
-        public const string portExposed = "8080:80";
+        public readonly string portExposed;
         public const string nginxConfigTemplatePath = "./nginx.conf";
         public readonly DiscoveryServiceClient discoveryService;
 
         public NginxController() // DiscoveryServiceClient client)
         {
-            DockerService.Host = "-H unix:///var/run/docker.sock";
-            NginxService.Host = "-H unix:///var/run/docker.sock";
-            this.discoveryService = new DiscoveryServiceClient("http://localhost:7000");
+            var dockerHost = Environment.GetEnvironmentVariable("DOCKER_URL");
+            var discoveryServiceUrl = Environment.GetEnvironmentVariable("DISCOVERY_URL");
+            var port = Environment.GetEnvironmentVariable("NGINX_EXPOSED_PORT");
+
+            if(string.IsNullOrEmpty(dockerHost))
+            {
+                DockerService.Host = "";
+                NginxService.Host = "";
+            }
+            else
+            {
+                DockerService.Host = "-H " + dockerHost; // "-H unix:///var/run/docker.sock";
+                NginxService.Host = "-H " + dockerHost;
+            }
+
+            if(string.IsNullOrEmpty(port))
+            {
+                portExposed = "8080:80";
+            }
+            else
+            {
+                portExposed = port + ":80";
+            }
+
+            this.discoveryService = new DiscoveryServiceClient(discoveryServiceUrl);
         }
 
         // TODO: change the CLI calls to not be so suspectable to injection attacks

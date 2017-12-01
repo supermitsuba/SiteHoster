@@ -18,9 +18,15 @@ namespace WebsiteManager
             BuildWebHost(args).Run();
         }
 
-        public static IWebHost BuildWebHost(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
+        public static IWebHost BuildWebHost(string[] args)
+        {
+            var myConfig = new ConfigurationBuilder()
+                .AddEnvironmentVariables()
+                .Build();
+
+            return WebHost.CreateDefaultBuilder(args)
                 .UseKestrel()
+                .UseConfiguration(myConfig)
                 .ConfigureAppConfiguration((context, config) =>{
                     var env = context.HostingEnvironment;
 
@@ -31,5 +37,6 @@ namespace WebsiteManager
                 .UseUrls("http://0.0.0.0:5000")
                 .UseStartup<Startup>()
                 .Build();
+        }
     }
 }

@@ -30,7 +30,9 @@
                 }
             },
             "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "DOCKER_URL": "",
+                "DISCOVERY_URL":"http://localhost:8003"
             },
             "sourceFileMap": {
                 "/Views": "${workspaceFolder}/Views"

@@ -1,21 +1,65 @@
 version: '2'
 services:
   api_nginx:
-    # build: 
+    build: ../api/NginxManager
     # docker run -v /var/run/docker.sock:/var/run/docker.sock --name nginx-service -d -p 8002:5000 supermitsuba/nginx-service:1
-    image: supermitsuba/nginx-service:1 
+    #image: supermitsuba/nginx-service:1 
     ports: 
     - "8002:5000"
-    entrypoint: ["dotnet", "NginxService.dll", "--server.urls", "http://0.0.0.0:5000"]
+    environment:
+    - DOCKER_URL=unix:///var/run/docker.sock
+    - DISCOVERY_URL=http://192.168.10.125:8000
+    - NGINX_EXPOSED_PORT=8004
+    entrypoint: ["dotnet", "NginxManager.dll", "--server.urls", "http://0.0.0.0:5000"]
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
     links:
     - rabbit_mq
-
+    depends_on:
+    - api_discovery
     # uses supermitsuba/nginx:1
     # based off 1.13
     # example run command: docker run --name some-nginx -d -p 8080:80 supermitsuba/nginx:1
     # TODO: need to share a config file for editing
     # docker cp ./nginx.conf some-nginx:/etc/nginx/nginx.conf
     # http://localhost:8080/discovery-service/api/websites
+
+  api_docker:
+    build: ../api/DockerManager
+    # docker build -t supermitsuba/docker-service:1 .
+    # docker run -v /var/run/docker.sock:/var/run/docker.sock --name docker-service -d -p 8001:5000 supermitsuba/docker-service:1
+    # docker -H unix:///var/run/docker.sock ps
+    #image: supermitsuba/docker-service:1
+    ports: 
+    - "8001:5000"
+    environment:
+    - DOCKER_URL=unix:///var/run/docker.sock
+    - DISCOVERY_URL=http://192.168.10.125:8000
+    entrypoint: ["dotnet", "DockerManager.dll", "--server.urls", "http://0.0.0.0:5000"]
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - /Users/supermitsuba/git/SiteHoster/shared/repo/websites:/var/run/savedFolder
+    links:
+    - rabbit_mq
+    depends_on:
+    - api_discovery
+
+  api_discovery:
+    build: ../api/DiscoveryService
+    #image: supermitsuba/discovery-service:1
+    ports: 
+    - "8000:5000"
+    environment:
+    - SAVE_LOCATIONS=/var/savedFolder
+    entrypoint: ["dotnet", "WebsiteManager.dll", "--server.urls", "http://0.0.0.0:5000"]
+    # need to test this so files persist.
+    # volumes:
+    # - ./WebsiteJson:/var/www/web/savedFolder
+    volumes:
+    - /Users/supermitsuba/git/SiteHoster/shared/repo/savedFolder:/var/savedFolder
+    container_name: api_discovery
+    links:
+    - rabbit_mq
 
   rabbit_mq: # TODO: this needs to be an x86 version of rabbit mq
     image: supermitsuba/rpi-rabbitmq:1 #for raspberry pi
@@ -27,27 +71,3 @@ services:
     - "25672:25672"
     - "15672:15672"
     container_name: rabbit_mq
-
-  api_docker:
-    # build: ../api/DockerManager/Dockerfile
-    # docker build -t supermitsuba/docker-service:1 .
-    # docker run -v /var/run/docker.sock:/var/run/docker.sock --name docker-service -d -p 8001:5000 supermitsuba/docker-service:1
-    # docker -H unix:///var/run/docker.sock ps
-    image: supermitsuba/docker-service:1
-    ports: 
-    - "8001:5000"
-    entrypoint: ["dotnet", "DockerManager.dll", "--server.urls", "http://0.0.0.0:5000"]
-    links:
-    - rabbit_mq
-
-  api_discovery:
-    # build: ../api/WebsiteManager/Dockerfile
-    image: supermitsuba/discovery-service:1
-    ports: 
-    - "8000:5000"
-    entrypoint: ["dotnet", "WebsiteManager.dll", "--server.urls", "http://0.0.0.0:5000"]
-    # need to test this so files persist.
-    # volumes:
-    # - ./WebsiteJson:/var/www/web/savedFolder
-    links:
-    - rabbit_mq

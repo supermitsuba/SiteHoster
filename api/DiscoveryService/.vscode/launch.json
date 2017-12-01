@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/bin/Debug/netcoreapp2.0/NginxManager.dll",
+            "program": "${workspaceFolder}/bin/Debug/netcoreapp2.0/WebsiteManager.dll",
             "args": [],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
@@ -31,9 +31,7 @@
             },
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "DOCKER_URL": "",
-                "DISCOVERY_URL":"http://localhost:8003",
-                "NGINX_EXPOSED_PORT":"8080"
+                "SAVE_LOCATIONS":"./savedFolder"
             },
             "sourceFileMap": {
                 "/Views": "${workspaceFolder}/Views"

@@ -17,11 +17,18 @@ namespace NginxManager
             BuildWebHost(args).Run();
         }
 
-        public static IWebHost BuildWebHost(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .UseKestrel()
-                .UseUrls("http://0.0.0.0:5000")
-                .UseStartup<Startup>()
-                .Build();
+        public static IWebHost BuildWebHost(string[] args)
+        {
+            var config = new ConfigurationBuilder()
+                            .AddEnvironmentVariables()
+                            .Build();
+
+            return WebHost.CreateDefaultBuilder(args)
+                            .UseConfiguration(config)
+                            .UseKestrel()
+                            .UseUrls("http://0.0.0.0:5000")
+                            .UseStartup<Startup>()
+                            .Build();
+        }
     }
 }

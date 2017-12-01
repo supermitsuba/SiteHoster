@@ -15,12 +15,12 @@
     [Route("api/[controller]")]
     public class WebsitesController : Controller
     {
-        private readonly ConfigurationModel configuration;
+        private readonly string saveLocation;
 
         public WebsitesController(IOptions<ConfigurationModel> config)
         {
-            this.configuration = config.Value;
-            InitializeDirectory(this.configuration.saveLocation);
+            this.saveLocation = Environment.GetEnvironmentVariable("SAVE_LOCATIONS");
+            InitializeDirectory(this.saveLocation);
         }
 
         private static void InitializeDirectory(string path)
@@ -36,7 +36,7 @@
         [HttpGet]
         public IEnumerable<Website> Get()
         {
-            var websites = GetAllRecords(this.configuration.saveLocation);
+            var websites = GetAllRecords(this.saveLocation);
             return websites;
         }
 
@@ -58,7 +58,7 @@
         [HttpGet("{name}")]
         public IActionResult Get(string name)
         {
-            var result = GetAllRecords(this.configuration.saveLocation).Where(p => p.Name == name).FirstOrDefault(); 
+            var result = GetAllRecords(this.saveLocation).Where(p => p.Name == name).FirstOrDefault(); 
             if(result == null){
                 return this.StatusCode((int)HttpStatusCode.NotFound);
             }
@@ -70,8 +70,8 @@
         [HttpPost]
         public IActionResult Post([FromBody]Website value)
         {
-            if(!NameExist(this.configuration.saveLocation, value.Name)) {
-                SaveWebsite(this.configuration.saveLocation, value);
+            if(!NameExist(this.saveLocation, value.Name)) {
+                SaveWebsite(this.saveLocation, value);
                 return this.StatusCode((int)HttpStatusCode.Created, value);
             }
             else {
@@ -95,7 +95,7 @@
         public IActionResult Put(string name, [FromBody]Website value)
         {
             if(name == value.Name){
-                SaveWebsite(this.configuration.saveLocation, value);
+                SaveWebsite(this.saveLocation, value);
                 return this.StatusCode((int)HttpStatusCode.OK, value);
             }
             else{
@@ -107,8 +107,8 @@
         [HttpDelete("{name}")]
         public IActionResult Delete(string name)
         {
-            if(NameExist(this.configuration.saveLocation, name)) {
-                DeleteWebsite(this.configuration.saveLocation, name);
+            if(NameExist(this.saveLocation, name)) {
+                DeleteWebsite(this.saveLocation, name);
                 return this.StatusCode((int)HttpStatusCode.OK);
             }
             else {
