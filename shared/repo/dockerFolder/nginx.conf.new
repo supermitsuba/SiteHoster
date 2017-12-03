@@ -14,5 +14,10 @@ http {
         proxy_pass http://192.168.10.125:32773/;
       }
 
+
+      location /newsite2/ {
+        proxy_pass http://192.168.10.125:32774/;
+      }
+
     }
 }

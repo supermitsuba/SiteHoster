@@ -32,9 +32,7 @@
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
                 "DOCKER_URL": "unix:///var/run/docker.sock",
-                "DISCOVERY_URL":"http://192.168.10.125:8000",
-                "NGINX_EXPOSED_PORT":"8004",
-                "SAVE_LOCATIONS":"/var/savedFolder"
+                "DISCOVERY_URL":"http://192.168.10.125:8000"
             },
             "sourceFileMap": {
                 "/Views": "${workspaceFolder}/Views"

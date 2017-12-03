@@ -33,7 +33,9 @@
                 "ASPNETCORE_ENVIRONMENT": "Development",
                 "DISCOVERY_URL":"http://192.168.10.125:8000",
                 "NGINX_EXPOSED_PORT":"8004",
-                "SAVE_LOCATIONS":"/Users/supermitsuba/git/SiteHoster/shared/repo/nginxConfiguration"
+                "DOCKER_LOCATIONS":"/Users/supermitsuba/git/SiteHoster/shared/repo/dockerFolder",
+                "NGINX_LOCATIONS":"/Users/supermitsuba/git/SiteHoster/shared/repo/nginxConfiguration",
+                "DOCKER_URL":"http://192.168.10.125:8001"
             },
             "sourceFileMap": {
                 "/Views": "${workspaceFolder}/Views"

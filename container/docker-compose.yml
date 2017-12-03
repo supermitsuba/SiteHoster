@@ -10,6 +10,7 @@ services:
     - NGINX_LOCATIONS=/var/nginxFolder
     - DOCKER_LOCATIONS=/var/dockerFolder
     - DISCOVERY_URL=http://192.168.10.125:8000
+    - DOCKER_URL=http://192.168.10.125:8001
     - NGINX_EXPOSED_PORT=8004
     entrypoint: ["dotnet", "NginxManager.dll", "--server.urls", "http://0.0.0.0:5000"]
     volumes:
@@ -18,7 +19,10 @@ services:
     - /Users/supermitsuba/git/SiteHoster/shared/repo/dockerFolder:/var/dockerFolder
     links:
     - rabbit_mq
+    - api_docker
+    - api_discovery
     depends_on:
+    - api_docker
     - api_discovery
     # uses supermitsuba/nginx:1
     # based off 1.13
@@ -45,6 +49,7 @@ services:
     - /Users/supermitsuba/git/SiteHoster/shared/repo/dockerFolder:/var/dockerFolder
     links:
     - rabbit_mq
+    - api_discovery
     depends_on:
     - api_discovery
 

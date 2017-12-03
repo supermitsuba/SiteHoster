@@ -134,6 +134,7 @@ namespace SiteHosterSite.Services
         }
         public static Task<List<ConsoleMessage>> ExecuteCommand(string nameOfNginxService, string command)
         {
+            Console.WriteLine($"[DEBUG]: ExecuteCommand {nameOfNginxService} {command}");
             var dockerCommand = "docker";
             var args = $"{Host} exec -d {nameOfNginxService} {command}";
             var process = new ProcessExecutor();
@@ -147,6 +148,7 @@ namespace SiteHosterSite.Services
 
         public static Task<List<ConsoleMessage>> CopyFileToContainer(string nginxName, string hostPath, string containerPath)
         {
+            Console.WriteLine($"[DEBUG]: CopyFileToContainer {nginxName} {hostPath} {containerPath}");
             var command = "docker";
             var args = $"{Host} cp {hostPath} {nginxName}:{containerPath}";
             var process = new ProcessExecutor();

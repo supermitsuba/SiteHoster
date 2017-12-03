@@ -14,7 +14,7 @@
     {
         public const string conatinerNameOfNginx = "nginx";
         public readonly string portExposed;
-        public const string nginxConfigTemplatePath = "./nginx.conf";
+        public const string nginxConfigTemplatePath = "nginx.conf";
         public readonly DockerServiceClient dockerServiceClient;
         public readonly DiscoveryServiceClient discoveryServiceClient;
         public readonly string nginxLocation;
@@ -25,19 +25,9 @@
             this.nginxLocation = Environment.GetEnvironmentVariable("NGINX_LOCATIONS");
             this.dockerLocation = Environment.GetEnvironmentVariable("DOCKER_LOCATIONS");
             InitializeDirectory(nginxLocation);
-            var dockerHost = Environment.GetEnvironmentVariable("DOCKER_URL");
             var discoveryServiceUrl = Environment.GetEnvironmentVariable("DISCOVERY_URL");
-            var dockerServiceUrl = Environment.GetEnvironmentVariable("DISCOVERY_URL");
+            var dockerServiceUrl = Environment.GetEnvironmentVariable("DOCKER_URL");
             var port = Environment.GetEnvironmentVariable("NGINX_EXPOSED_PORT");
-
-            if(string.IsNullOrEmpty(dockerHost))
-            {
-                DockerService.Host = "";
-            }
-            else
-            {
-                DockerService.Host = "-H " + dockerHost; // "-H unix:///var/run/docker.sock";
-            }
 
             if(string.IsNullOrEmpty(port))
             {
@@ -118,7 +108,7 @@
         public async Task<IActionResult> AddNewConfig(string serviceName)
         {
             var linesToWrite = new StringBuilder();
-            var allLines = await System.IO.File.ReadAllLinesAsync(nginxConfigTemplatePath);
+            var allLines = await System.IO.File.ReadAllLinesAsync("./"+nginxConfigTemplatePath);
             var service = await this.discoveryServiceClient.GetWebsite(serviceName);
 
             await SaveNewApplication(service.Name, service.DockerUrl.ToString());

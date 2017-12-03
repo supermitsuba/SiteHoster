@@ -21,7 +21,7 @@ namespace SiteHoster.Common.Services
             {
                 var myObject = new { port = portExposed };
                 var json =JsonConvert.SerializeObject(myObject);
-                var result = await client.PostAsync($"{baseAddress}/api/docker/container/run/{name}", new StringContent(json, Encoding.ASCII, "application/json"));
+                var result = await client.PostAsync($"{baseAddress}/api/docker/container/run/{name}", new StringContent(json, Encoding.UTF8, "application/json"));
                 return await result.Content.ReadAsStringAsync();
             }
         }
@@ -55,22 +55,40 @@ namespace SiteHoster.Common.Services
 
         public async Task<string> CopyFileToContainer(string name, string hostPath, string containerPath)
         {
+            System.Console.WriteLine($"[DEBUG]: CopyFileToContainer {name} {hostPath} {containerPath}");
+
             using(var client = new HttpClient())
             {
                 var myObject = new { hostPath = hostPath, containerPath = containerPath };
                 var json =JsonConvert.SerializeObject(myObject);
-                var result = await client.PostAsync($"{baseAddress}/api/docker/container/copy/{name}", new StringContent(json));
+                var url = $"{baseAddress}/api/docker/container/copy/{name}";
+                
+                System.Console.WriteLine($"[DEBUG]: ExecuteCommandInContainer calling: {url} with: {json}");
+
+                var payload = new StringContent(json, Encoding.UTF8, "application/json");              
+                var result = await client.PostAsync(url, payload);
+
+                System.Console.WriteLine($"[DEBUG]: CopyFileToContainer result: {result.StatusCode} {await result.Content.ReadAsStringAsync()}");
                 return await result.Content.ReadAsStringAsync();
             }
         }
 
         public async Task<string> ExecuteCommandInContainer(string name, string command)
         {
+            System.Console.WriteLine($"[DEBUG]: ExecuteCommandInContainer {name} {command}");
+
             using(var client = new HttpClient())
             {
                 var myObject = new { command = command };
-                var json =JsonConvert.SerializeObject(myObject);                
-                var result = await client.PostAsync($"{baseAddress}/api/docker/container/command/{name}", new StringContent(json));
+                var json =JsonConvert.SerializeObject(myObject);  
+                var url = $"{baseAddress}/api/docker/container/command/{name}";
+
+                System.Console.WriteLine($"[DEBUG]: ExecuteCommandInContainer calling: {url} with: {json}");
+
+                var payload = new StringContent(json, Encoding.UTF8, "application/json");              
+                var result = await client.PostAsync(url, payload);
+                
+                System.Console.WriteLine($"[DEBUG]: ExecuteCommandInContainer result: {result.StatusCode} {await result.Content.ReadAsStringAsync()}");
                 return await result.Content.ReadAsStringAsync();
             }
         }
