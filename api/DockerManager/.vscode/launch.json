@@ -31,8 +31,10 @@
             },
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "DOCKER_URL": "",
-                "DISCOVERY_URL":"http://localhost:8003"
+                "DOCKER_URL": "unix:///var/run/docker.sock",
+                "DISCOVERY_URL":"http://192.168.10.125:8000",
+                "NGINX_EXPOSED_PORT":"8004",
+                "SAVE_LOCATIONS":"/var/savedFolder"
             },
             "sourceFileMap": {
                 "/Views": "${workspaceFolder}/Views"

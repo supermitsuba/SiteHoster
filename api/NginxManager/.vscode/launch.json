@@ -31,9 +31,9 @@
             },
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "DOCKER_URL": "",
-                "DISCOVERY_URL":"http://localhost:8003",
-                "NGINX_EXPOSED_PORT":"8080"
+                "DISCOVERY_URL":"http://192.168.10.125:8000",
+                "NGINX_EXPOSED_PORT":"8004",
+                "SAVE_LOCATIONS":"/Users/supermitsuba/git/SiteHoster/shared/repo/nginxConfiguration"
             },
             "sourceFileMap": {
                 "/Views": "${workspaceFolder}/Views"

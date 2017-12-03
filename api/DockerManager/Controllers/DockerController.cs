@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DockerManager.Models;
 using Microsoft.AspNetCore.Mvc;
 using SiteHoster.Common.Services;
 using SiteHosterSite.Services;
@@ -39,7 +40,7 @@ namespace DockerManager.Controllers
 
         [HttpPost()]
         [Route("api/docker/container/run/{serviceName}")]
-        public async Task<IActionResult> Run(string serviceName)
+        public async Task<IActionResult> Run(string serviceName, [FromBody]RunOptions options)
         {
             var website = await this.client.GetWebsite(serviceName);
             if(website == null) 
@@ -50,7 +51,7 @@ namespace DockerManager.Controllers
                 return this.BadRequest("This website is already a container.  Do a start instead.  Url: " +website.DockerUrl);
             }
 
-            var result = await DockerService.RunDockerImage(website.Name, null, "./");
+            var result = await DockerService.RunDockerImage(website.Name, options.port, "./");
             if(result.Any(p => p.IsError && !String.IsNullOrEmpty(p.Message)))
             {
                 return this.BadRequest("Cannot create container for running.");
@@ -118,6 +119,32 @@ namespace DockerManager.Controllers
                 return this.NotFound();
                 
             var result = await DockerService.RemoveDockerContainer(website.Name);
+            var message = string.Join("\n", result.Select(p => (p.IsError ? "[ERROR]: " : "[Message]: ") + p.Message));
+            return this.Ok(message);
+        }
+        
+        [HttpPost()]
+        [Route("api/docker/container/command/{serviceName}")]
+        public async Task<IActionResult> Remove(string serviceName, [FromBody]CommandOptions options)
+        {
+            var website = await this.client.GetWebsite(serviceName);
+            if(website == null) 
+                return this.NotFound();
+                
+            var result = await DockerService.ExecuteCommand(website.Name, options.command);
+            var message = string.Join("\n", result.Select(p => (p.IsError ? "[ERROR]: " : "[Message]: ") + p.Message));
+            return this.Ok(message);
+        }
+        
+        [HttpPost()]
+        [Route("api/docker/container/copy/{serviceName}")]
+        public async Task<IActionResult> Copy(string serviceName, [FromBody] CopyOptions options)
+        {
+            var website = await this.client.GetWebsite(serviceName);
+            if(website == null) 
+                return this.NotFound();
+                
+            var result = await DockerService.CopyFileToContainer(website.Name, options.hostPath, options.containerPath);
             var message = string.Join("\n", result.Select(p => (p.IsError ? "[ERROR]: " : "[Message]: ") + p.Message));
             return this.Ok(message);
         }

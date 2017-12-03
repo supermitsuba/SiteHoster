@@ -52,6 +52,8 @@ namespace SiteHoster.Common.Services
 
         private void ErrorOutputReceived(object sender, DataReceivedEventArgs e)
         {
+            if(string.IsNullOrEmpty(e.Data)) return;
+
             this.messagesForCallback.Add(new ConsoleMessage(){
                 Message = e.Data,
                 IsError = true
@@ -60,6 +62,8 @@ namespace SiteHoster.Common.Services
 
         private void OutputReceived(object sender, DataReceivedEventArgs e)
         {
+            if(string.IsNullOrEmpty(e.Data)) return;
+            
             this.messagesForCallback.Add(new ConsoleMessage(){
                 Message = e.Data,
                 IsError = false

@@ -132,5 +132,30 @@ namespace SiteHosterSite.Services
                 return t.Task;
             });
         }
+        public static Task<List<ConsoleMessage>> ExecuteCommand(string nameOfNginxService, string command)
+        {
+            var dockerCommand = "docker";
+            var args = $"{Host} exec -d {nameOfNginxService} {command}";
+            var process = new ProcessExecutor();
+            return Task<List<ConsoleMessage>>.Run(() =>
+            {
+                var t = new TaskCompletionSource<List<ConsoleMessage>>();
+                process.ExecuteCLIWithResult(dockerCommand, args, "./", message => t.TrySetResult(message));
+                return t.Task;
+            });
+        }
+
+        public static Task<List<ConsoleMessage>> CopyFileToContainer(string nginxName, string hostPath, string containerPath)
+        {
+            var command = "docker";
+            var args = $"{Host} cp {hostPath} {nginxName}:{containerPath}";
+            var process = new ProcessExecutor();
+            return Task<List<ConsoleMessage>>.Run(() =>
+            {
+                var t = new TaskCompletionSource<List<ConsoleMessage>>();
+                process.ExecuteCLIWithResult(command, args, "./", message => t.TrySetResult(message));
+                return t.Task;
+            });
+        }
     }
 }

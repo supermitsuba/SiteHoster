@@ -1,0 +1,18 @@
+worker_processes 1;
+
+error_log nginx_error.log;
+events {
+    worker_connections 1024;
+}
+
+http {
+    server {
+        listen 80;
+
+
+      location /newsite/ {
+        proxy_pass http://192.168.10.125:32773/;
+      }
+
+    }
+}

@@ -1,7 +1,6 @@
 FROM supermitsuba/microsoft-dotnet:2.0.3-sdk
 
 #RUN apt update && apt install -y 
-RUN curl -sSL https://get.docker.com | sh
 #RUN apt update && apt install -y git
 #RUN git clone https://github.com/supermitsuba/SiteHoster.git /var/www/web
 #   VOLUME [ "/Users/supermitsuba/git/SiteHoster/api/WebsiteManager/" ]

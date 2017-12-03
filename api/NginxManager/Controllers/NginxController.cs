@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
@@ -14,23 +15,28 @@
         public const string conatinerNameOfNginx = "nginx";
         public readonly string portExposed;
         public const string nginxConfigTemplatePath = "./nginx.conf";
-        public readonly DiscoveryServiceClient discoveryService;
+        public readonly DockerServiceClient dockerServiceClient;
+        public readonly DiscoveryServiceClient discoveryServiceClient;
+        public readonly string nginxLocation;
+        public readonly string dockerLocation;
 
         public NginxController() // DiscoveryServiceClient client)
         {
+            this.nginxLocation = Environment.GetEnvironmentVariable("NGINX_LOCATIONS");
+            this.dockerLocation = Environment.GetEnvironmentVariable("DOCKER_LOCATIONS");
+            InitializeDirectory(nginxLocation);
             var dockerHost = Environment.GetEnvironmentVariable("DOCKER_URL");
             var discoveryServiceUrl = Environment.GetEnvironmentVariable("DISCOVERY_URL");
+            var dockerServiceUrl = Environment.GetEnvironmentVariable("DISCOVERY_URL");
             var port = Environment.GetEnvironmentVariable("NGINX_EXPOSED_PORT");
 
             if(string.IsNullOrEmpty(dockerHost))
             {
                 DockerService.Host = "";
-                NginxService.Host = "";
             }
             else
             {
                 DockerService.Host = "-H " + dockerHost; // "-H unix:///var/run/docker.sock";
-                NginxService.Host = "-H " + dockerHost;
             }
 
             if(string.IsNullOrEmpty(port))
@@ -42,7 +48,8 @@
                 portExposed = port + ":80";
             }
 
-            this.discoveryService = new DiscoveryServiceClient(discoveryServiceUrl);
+            this.dockerServiceClient = new DockerServiceClient(dockerServiceUrl);
+            this.discoveryServiceClient = new DiscoveryServiceClient(discoveryServiceUrl);
         }
 
         // TODO: change the CLI calls to not be so suspectable to injection attacks
@@ -50,36 +57,32 @@
         [Route("api/nginx/container/create")]
         public async Task<IActionResult> Create()
         {
-            var result = await DockerService.RunDockerImage(conatinerNameOfNginx, portExposed, "./");
-            var message = string.Join("\n", result.Select(p => (p.IsError ? "[ERROR]: " : "[Message]: ") + p.Message));
-            return this.Ok(message);
+            var result = await this.dockerServiceClient.RunContainer("nginx", portExposed+":80");
+            return this.Ok(result);
         }
 
         [HttpPost()]
         [Route("api/nginx/start")]
         public async Task<IActionResult> Start()
         {
-            var result = await DockerService.StartDockerImage(conatinerNameOfNginx, portExposed, "./");
-            var message = string.Join("\n", result.Select(p => (p.IsError ? "[ERROR]: " : "[Message]: ") + p.Message));
-            return this.Ok(message);
+            var result = await this.dockerServiceClient.StartContainer("nginx");
+            return this.Ok(result);
         }
         
         [HttpPost()]
         [Route("api/nginx/reload")]
         public async Task<IActionResult> Reload()
         {
-            var result = await NginxService.ReloadNginxService(conatinerNameOfNginx);
-            var message = string.Join("\n", result.Select(p => (p.IsError ? "[ERROR]: " : "[Message]: ") + p.Message));
-            return this.Ok(message);         
+            var result = await this.dockerServiceClient.ExecuteCommandInContainer("nginx", "/usr/sbin/nginx -s reload");
+            return this.Ok(result);       
         }
         
         [HttpPost()]
         [Route("api/nginx/stop")]
         public async Task<IActionResult> Stop()
         {
-            var result = await DockerService.StopDockerImage(conatinerNameOfNginx);
-            var message = string.Join("\n", result.Select(p => (p.IsError ? "[ERROR]: " : "[Message]: ") + p.Message));
-            return this.Ok(message);
+            var result = await this.dockerServiceClient.StopContainer("nginx");
+            return this.Ok(result);
         }
 
         /*
@@ -116,13 +119,16 @@
         {
             var linesToWrite = new StringBuilder();
             var allLines = await System.IO.File.ReadAllLinesAsync(nginxConfigTemplatePath);
-            var service = await this.discoveryService.GetWebsite(serviceName);
+            var service = await this.discoveryServiceClient.GetWebsite(serviceName);
+
+            await SaveNewApplication(service.Name, service.DockerUrl.ToString());
 
             for(var i = 0; i < allLines.Count(); i++)
             {
                 if(i == 11)
                 {
-                    BuildNewApplication(linesToWrite, service.Name, service.DockerUrl.ToString());
+                    var config = await this.WriteNginxConfig();
+                    linesToWrite.Append(config);
                 }
                 else
                 {
@@ -130,21 +136,46 @@
                 }
             }
 
-            await System.IO.File.WriteAllTextAsync(nginxConfigTemplatePath, linesToWrite.ToString());
+            var nginxConfigPath = System.IO.Path.Combine(this.dockerLocation, nginxConfigTemplatePath+".new");
+            await System.IO.File.WriteAllTextAsync(nginxConfigPath, linesToWrite.ToString());
             
-            var result = await NginxService.WriteConfig(conatinerNameOfNginx, nginxConfigTemplatePath);
+            var result = await this.dockerServiceClient.CopyFileToContainer("nginx", nginxConfigPath, "/etc/nginx/nginx.conf");
 
             return this.Ok(result);
         }
 
-        private void BuildNewApplication(StringBuilder stringBuilder, string name, string url)
+        private async Task SaveNewApplication(string name, string url)
         {
+            var stringBuilder = new StringBuilder();
             stringBuilder.AppendLine($"");
             stringBuilder.AppendLine($"      location /{name}/ {{");
             stringBuilder.AppendLine($"        proxy_pass {url};");
             stringBuilder.AppendLine($"      }}");
             stringBuilder.AppendLine($"");
+            var path = System.IO.Path.Combine(this.nginxLocation, name+".json");
+            await System.IO.File.WriteAllTextAsync(path, stringBuilder.ToString());
         }
 
+        private async Task<string> WriteNginxConfig()
+        {
+            var stringBuilder = new StringBuilder();
+
+            foreach(var jsonFile in Directory.EnumerateFiles(this.nginxLocation, "*.json", SearchOption.TopDirectoryOnly))
+            {
+                var text = await System.IO.File.ReadAllTextAsync(jsonFile);
+                stringBuilder.Append(text);
+            }
+
+            return stringBuilder.ToString();
+        }
+
+        private static void InitializeDirectory(string path)
+        {
+            // Probably should be replaced by singleton with a lock pattern
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+        }
     }
 }
