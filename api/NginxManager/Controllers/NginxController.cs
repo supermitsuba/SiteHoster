@@ -12,7 +12,7 @@
 
     public class NginxController : Controller
     {
-        public const string conatinerNameOfNginx = "nginx";
+        public readonly string conatinerNameOfNginx;
         public readonly string portExposed;
         public const string nginxConfigTemplatePath = "nginx.conf";
         public readonly DockerServiceClient dockerServiceClient;
@@ -22,12 +22,42 @@
 
         public NginxController() // DiscoveryServiceClient client)
         {
-            this.nginxLocation = Environment.GetEnvironmentVariable("NGINX_LOCATIONS");
-            this.dockerLocation = Environment.GetEnvironmentVariable("DOCKER_LOCATIONS");
-            InitializeDirectory(nginxLocation);
             var discoveryServiceUrl = Environment.GetEnvironmentVariable("DISCOVERY_URL");
-            var dockerServiceUrl = Environment.GetEnvironmentVariable("DOCKER_URL");
             var port = Environment.GetEnvironmentVariable("NGINX_EXPOSED_PORT");
+            this.conatinerNameOfNginx = Environment.GetEnvironmentVariable("NGINX_CONTAINER_NAME");
+            var dockerContainerName = Environment.GetEnvironmentVariable("DOCKER_CONTAINER_NAME");
+
+            var dockerFolderLocation = Environment.GetEnvironmentVariable("DOCKER_LOCATIONS");
+            if(string.IsNullOrEmpty(dockerFolderLocation))
+            {
+                this.dockerLocation = "/var/dockerFolder";
+            }
+            else
+            {
+                this.dockerLocation = dockerFolderLocation;
+            }
+
+            var nginxFolderLocation = Environment.GetEnvironmentVariable("NGINX_LOCATIONS");
+            if(string.IsNullOrEmpty(nginxFolderLocation))
+            {
+                this.nginxLocation = "/var/nginxFolder";
+            }
+            else
+            {
+                this.nginxLocation = nginxFolderLocation;
+            }
+            
+            InitializeDirectory(nginxLocation);
+
+            if(string.IsNullOrEmpty(dockerContainerName))
+            {
+                System.Console.WriteLine("[DEBUG]: DockerContainerName is null.  Should be something like api_docker in the discovery service.");
+            }
+            this.discoveryServiceClient = new DiscoveryServiceClient(discoveryServiceUrl);
+            var nginxSite = this.discoveryServiceClient.GetWebsite(dockerContainerName);
+            nginxSite.Wait();
+            var dockerServiceUrl = nginxSite.Result.DockerUrl;
+            this.dockerServiceClient = new DockerServiceClient(dockerServiceUrl.ToString().TrimEnd('/'));
 
             if(string.IsNullOrEmpty(port))
             {
@@ -37,9 +67,6 @@
             {
                 portExposed = port + ":80";
             }
-
-            this.dockerServiceClient = new DockerServiceClient(dockerServiceUrl);
-            this.discoveryServiceClient = new DiscoveryServiceClient(discoveryServiceUrl);
         }
 
         // TODO: change the CLI calls to not be so suspectable to injection attacks
@@ -47,7 +74,7 @@
         [Route("api/nginx/container/create")]
         public async Task<IActionResult> Create()
         {
-            var result = await this.dockerServiceClient.RunContainer("nginx", portExposed+":80");
+            var result = await this.dockerServiceClient.RunContainer(this.conatinerNameOfNginx, portExposed);
             return this.Ok(result);
         }
 
@@ -55,7 +82,7 @@
         [Route("api/nginx/start")]
         public async Task<IActionResult> Start()
         {
-            var result = await this.dockerServiceClient.StartContainer("nginx");
+            var result = await this.dockerServiceClient.StartContainer(this.conatinerNameOfNginx);
             return this.Ok(result);
         }
         
@@ -63,7 +90,7 @@
         [Route("api/nginx/reload")]
         public async Task<IActionResult> Reload()
         {
-            var result = await this.dockerServiceClient.ExecuteCommandInContainer("nginx", "/usr/sbin/nginx -s reload");
+            var result = await this.dockerServiceClient.ExecuteCommandInContainer(this.conatinerNameOfNginx, "/usr/sbin/nginx -s reload");
             return this.Ok(result);       
         }
         
@@ -71,7 +98,7 @@
         [Route("api/nginx/stop")]
         public async Task<IActionResult> Stop()
         {
-            var result = await this.dockerServiceClient.StopContainer("nginx");
+            var result = await this.dockerServiceClient.StopContainer(this.conatinerNameOfNginx);
             return this.Ok(result);
         }
 
@@ -129,7 +156,7 @@
             var nginxConfigPath = System.IO.Path.Combine(this.dockerLocation, nginxConfigTemplatePath+".new");
             await System.IO.File.WriteAllTextAsync(nginxConfigPath, linesToWrite.ToString());
             
-            var result = await this.dockerServiceClient.CopyFileToContainer("nginx", nginxConfigPath, "/etc/nginx/nginx.conf");
+            var result = await this.dockerServiceClient.CopyFileToContainer(this.conatinerNameOfNginx, nginxConfigPath, "/etc/nginx/nginx.conf");
 
             return this.Ok(result);
         }

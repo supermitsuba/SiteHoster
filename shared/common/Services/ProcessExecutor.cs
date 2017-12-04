@@ -27,6 +27,7 @@ namespace SiteHoster.Common.Services
         List<ConsoleMessage> messagesForCallback;
         public void ExecuteCLIWithResult(string command, string args, string workingDirectory, Action<List<ConsoleMessage>> callback)
         {
+            Console.WriteLine($"[DEBUG]: ExecuteCLIWithResult {command} {args} {workingDirectory}");
             using(var process = new Process())
             {
                 process.StartInfo.FileName = command; 
@@ -46,6 +47,7 @@ namespace SiteHoster.Common.Services
                 process.ErrorDataReceived -= new DataReceivedEventHandler(ErrorOutputReceived);   
                 process.OutputDataReceived -= new DataReceivedEventHandler(OutputReceived);
             }
+            Console.WriteLine($"[DEBUG]: ExecuteCLIWithResult complete");
 
             callback(this.messagesForCallback);
         }

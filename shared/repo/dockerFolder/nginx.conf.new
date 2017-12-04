@@ -10,13 +10,13 @@ http {
         listen 80;
 
 
-      location /newsite/ {
-        proxy_pass http://192.168.10.125:32773/;
+      location /newsite6/ {
+        proxy_pass http://192.168.10.125:32779/;
       }
 
 
-      location /newsite2/ {
-        proxy_pass http://192.168.10.125:32774/;
+      location /newsite5/ {
+        proxy_pass http://192.168.10.125:32778/;
       }
 
     }

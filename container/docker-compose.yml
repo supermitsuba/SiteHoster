@@ -7,15 +7,13 @@ services:
     ports: 
     - "8002:5000"
     environment:
-    - NGINX_LOCATIONS=/var/nginxFolder
-    - DOCKER_LOCATIONS=/var/dockerFolder
+    - DOCKER_CONTAINER_NAME=api_docker
+    - NGINX_CONTAINER_NAME=nginx
     - DISCOVERY_URL=http://192.168.10.125:8000
-    - DOCKER_URL=http://192.168.10.125:8001
     - NGINX_EXPOSED_PORT=8004
     entrypoint: ["dotnet", "NginxManager.dll", "--server.urls", "http://0.0.0.0:5000"]
     volumes:
-    - /var/run/docker.sock:/var/run/docker.sock
-    - /Users/supermitsuba/git/SiteHoster/shared/repo/nginxConfiguration:/var/nginxFolder
+    - /Users/supermitsuba/git/SiteHoster/shared/repo/nginxFolder:/var/nginxFolder
     - /Users/supermitsuba/git/SiteHoster/shared/repo/dockerFolder:/var/dockerFolder
     links:
     - rabbit_mq
@@ -40,12 +38,15 @@ services:
     ports: 
     - "8001:5000"
     environment:
-    - DOCKER_URL=unix:///var/run/docker.sock
+    # - DOCKER_URL=unix:///var/run/docker.sock Get this from docker
+    - DOCKER_HOST_NAME=DOCKER-HOST
+    - BINDING_ADDRESS=http://192.168.10.125
     - DISCOVERY_URL=http://192.168.10.125:8000
     entrypoint: ["dotnet", "DockerManager.dll", "--server.urls", "http://0.0.0.0:5000"]
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
-    - /Users/supermitsuba/git/SiteHoster/shared/repo/websites:/var/run/savedFolder
+    # Should expect these volume shares
+    - /Users/supermitsuba/git/SiteHoster/shared/repo/discoveryFolder:/var/discoveryFolder 
     - /Users/supermitsuba/git/SiteHoster/shared/repo/dockerFolder:/var/dockerFolder
     links:
     - rabbit_mq
@@ -55,17 +56,13 @@ services:
 
   api_discovery:
     build: ../api/DiscoveryService
-    #image: supermitsuba/discovery-service:1
+    # image: supermitsuba/discovery-service:1
     ports: 
     - "8000:5000"
-    environment:
-    - SAVE_LOCATIONS=/var/savedFolder
     entrypoint: ["dotnet", "WebsiteManager.dll", "--server.urls", "http://0.0.0.0:5000"]
-    # need to test this so files persist.
-    # volumes:
-    # - ./WebsiteJson:/var/www/web/savedFolder
     volumes:
-    - /Users/supermitsuba/git/SiteHoster/shared/repo/savedFolder:/var/savedFolder
+    # It should expect a volume share called /var/discoveryFolder
+    - /Users/supermitsuba/git/SiteHoster/shared/repo/discoveryFolder/records:/var/discoveryFolder
     container_name: api_discovery
     links:
     - rabbit_mq

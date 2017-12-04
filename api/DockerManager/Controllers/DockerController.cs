@@ -11,12 +11,19 @@ namespace DockerManager.Controllers
 {
     public class DockerController : Controller
     {
-        DiscoveryServiceClient client = null;
+        private DiscoveryServiceClient client = null;
+        private readonly string bindingAddress = "";
 
         public DockerController()
         {
-            var dockerHost = Environment.GetEnvironmentVariable("DOCKER_URL");
+            var dockerHostName = Environment.GetEnvironmentVariable("DOCKER_HOST_NAME");
             var discoveryServiceUrl = Environment.GetEnvironmentVariable("DISCOVERY_URL");
+            bindingAddress = Environment.GetEnvironmentVariable("BINDING_ADDRESS");
+            
+            this.client = new DiscoveryServiceClient(discoveryServiceUrl);
+            var dockerHostSite = this.client.GetWebsite(dockerHostName);
+            dockerHostSite.Wait();
+            var dockerHost = dockerHostSite.Result.DockerUrl.ToString();
 
             if(string.IsNullOrEmpty(dockerHost))
             {
@@ -26,8 +33,6 @@ namespace DockerManager.Controllers
             {
                 DockerService.Host = "-H " + dockerHost; // "-H unix:///var/run/docker.sock";
             }
-
-            client = new DiscoveryServiceClient(discoveryServiceUrl);
         }
 
         [HttpGet]
@@ -65,7 +70,7 @@ namespace DockerManager.Controllers
             if(containerPort == null)
                 return this.BadRequest("Could not get port manually.");
              
-            website.DockerUrl = new Uri($"http://192.168.10.125:{containerPort}");
+            website.DockerUrl = new Uri($"{bindingAddress}:{containerPort}");
             await this.client.UpdateWebsite(website.Name, website);
             return this.Ok("Ok");
         }

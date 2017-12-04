@@ -1,0 +1,1 @@
+{"Name":"DOCKER-HOST","Description":"This API is used for website management.  Almost a discovery service.","Status":0,"Path":null,"DockerUrl":"unix:///var/run/docker.sock"}

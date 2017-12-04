@@ -35,7 +35,9 @@
                 "NGINX_EXPOSED_PORT":"8004",
                 "DOCKER_LOCATIONS":"/Users/supermitsuba/git/SiteHoster/shared/repo/dockerFolder",
                 "NGINX_LOCATIONS":"/Users/supermitsuba/git/SiteHoster/shared/repo/nginxConfiguration",
-                "DOCKER_URL":"http://192.168.10.125:8001"
+                "DOCKER_URL":"http://192.168.10.125:8001",
+                "NGINX_CONTAINER_NAME":"nginx",
+                "DOCKER_CONTAINER_NAME":"api_docker"
             },
             "sourceFileMap": {
                 "/Views": "${workspaceFolder}/Views"

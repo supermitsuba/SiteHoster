@@ -31,7 +31,7 @@
             },
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "SAVE_LOCATIONS":"./savedFolder"
+                "DISCOVERY_FOLDER":"/Users/supermitsuba/git/SiteHoster/shared/repo/discoveryFolder/records"
             },
             "sourceFileMap": {
                 "/Views": "${workspaceFolder}/Views"

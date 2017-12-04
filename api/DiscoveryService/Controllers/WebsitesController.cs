@@ -19,7 +19,16 @@
 
         public WebsitesController(IOptions<ConfigurationModel> config)
         {
-            this.saveLocation = Environment.GetEnvironmentVariable("SAVE_LOCATIONS");
+            var locationOverride = Environment.GetEnvironmentVariable("DISCOVERY_FOLDER");
+            if(string.IsNullOrEmpty(locationOverride))
+            {
+                this.saveLocation = "/var/discoveryFolder";
+            }
+            else
+            {
+                this.saveLocation = locationOverride;
+            }
+            
             InitializeDirectory(this.saveLocation);
         }
 

@@ -31,8 +31,9 @@
             },
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "DOCKER_URL": "unix:///var/run/docker.sock",
-                "DISCOVERY_URL":"http://192.168.10.125:8000"
+                "DOCKER_HOST_NAME": "DOCKER-HOST",
+                "DISCOVERY_URL":"http://192.168.10.125:8000",
+                "BINDING_ADDRESS":"http://192.168.10.125"
             },
             "sourceFileMap": {
                 "/Views": "${workspaceFolder}/Views"
