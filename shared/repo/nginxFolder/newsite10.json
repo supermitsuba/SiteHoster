@@ -1,0 +1,5 @@
+
+      location /newsite10/ {
+        proxy_pass http://192.168.10.125:32782/;
+      }
+

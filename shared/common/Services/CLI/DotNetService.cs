@@ -1,22 +1,53 @@
 namespace SiteHosterSite.Services
 {
+    using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Threading.Tasks;
+    using SiteHoster.Common.Models;
     using SiteHoster.Common.Services;
 
     public class DotNetService
     {
-        public void RestoreDotnetPackages(string locationOfCode)
+        public static Task<List<ConsoleMessage>> CreateDotnetProject(string locationOfCode)
         {
-            var command1 = "dotnet";
-            var args1 = "restore";
-            ProcessExecutor.ExecuteCLI(command1, args1, locationOfCode);
+            var command = "dotnet";
+            var args = "new webapi";
+            var process = new ProcessExecutor();
+
+            return Task<List<ConsoleMessage>>.Run(() =>
+            {
+                var t = new TaskCompletionSource<List<ConsoleMessage>>();
+                process.ExecuteCLIWithResult(command, args, locationOfCode, message => t.TrySetResult(message));
+                return t.Task;
+            });
         }
 
-        public void BuildDotnetBinary(string locationOfCode)
+        public static Task<List<ConsoleMessage>> RestoreDotnetPackages(string locationOfCode)
         {
-            var command2 = "dotnet";
-            var args2 = "publish -c Release -o releasebin";
-            ProcessExecutor.ExecuteCLI(command2, args2, locationOfCode);
+            var command = "dotnet";
+            var args = "restore";
+            var process = new ProcessExecutor();
+
+            return Task<List<ConsoleMessage>>.Run(() =>
+            {
+                var t = new TaskCompletionSource<List<ConsoleMessage>>();
+                process.ExecuteCLIWithResult(command, args, locationOfCode, message => t.TrySetResult(message));
+                return t.Task;
+            });
+        }
+
+        public static Task<List<ConsoleMessage>> BuildDotnetBinary(string locationOfCode)
+        {
+            var command = "dotnet";
+            var args = "publish -c Release -o out";
+            var process = new ProcessExecutor();
+
+            return Task<List<ConsoleMessage>>.Run(() =>
+            {
+                var t = new TaskCompletionSource<List<ConsoleMessage>>();
+                process.ExecuteCLIWithResult(command, args, locationOfCode, message => t.TrySetResult(message));
+                return t.Task;
+            });
         }
     }
 }
